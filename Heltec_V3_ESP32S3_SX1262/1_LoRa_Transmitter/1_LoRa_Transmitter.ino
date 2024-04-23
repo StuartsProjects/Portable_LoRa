@@ -7,7 +7,7 @@
 
 
 /*******************************************************************************************************
-  For LilyGo TBEAM V1.2 ESP32 SX1262
+  For Heltec V3 ESP32S3 SX1262
 
   Program Operation - This is a program that demonstrates the setup of a LoRa test transmitter.
 
@@ -30,7 +30,7 @@
 #include <SX126XLT.h>                              //get library here > https://github.com/StuartsProjects/SX12XX-LoRa  
 SX126XLT LoRa;                                     //create a library class instance called LoRa
 
-#include "LilyGo_TBEAM_V1_2_ESP32_SX1262_Pins.h"   //pin definitions for LilyGo TBEAM V1.2 ESP32 SX1262
+#include "Heltec_V3_ESP32S3_SX1262_Pins.h"         //pin definitions for  Heltec V3 ESP32S3 SX1262
 #include "Settings.h"                              //LoRa settings, frequencies, program settings etc 
 
 #include <U8g2lib.h>                               //get library here > https://github.com/olikraus/U8g2_Arduino
@@ -112,6 +112,8 @@ void packet_is_Error()
 
 void initDisplay()
 {
+  pinMode(RSTOLED, OUTPUT);
+  digitalWrite(RSTOLED, HIGH);
   disp.begin();
   disp.clearDisplay();
   disp.setFont(u8g2_font_t0_11b_mf);
@@ -119,6 +121,7 @@ void initDisplay()
   disp.print(F("Check LoRa"));
   disp.sendBuffer();
 }
+
 
 void dispscreen1()
 {
@@ -170,6 +173,16 @@ void dispscreen6()
 }
 
 
+void dispscreen9()
+{
+  disp.clearDisplay();
+  disp.setFont(u8g2_font_10x20_mf);
+  disp.setCursor(0, 15);
+  disp.print(F("BUZZER OFF"));
+  disp.sendBuffer();
+}
+
+
 void buzzer_beep(uint16_t hertz, uint16_t onmS, uint16_t offmS, uint16_t times)
 {
   uint16_t index, index2, times2;
@@ -207,15 +220,32 @@ void led_Flash(uint16_t flashes, uint16_t delaymS)
 }
 
 
+void VextON(void)
+{
+  pinMode(Vext, OUTPUT);
+  digitalWrite(Vext, LOW);
+}
+
+
+void VextOFF(void)
+{
+  pinMode(Vext, OUTPUT);
+  digitalWrite(Vext, HIGH);
+}
+
+
 void setup()
 {
   pinMode(LED1, OUTPUT);                        //setup pin as output for indicator LED
   led_Flash(8, 125);                            //LED flashes for two seconds to indicate program start
 
+  VextON();
+  delay(100);
+
   Serial.begin(115200);
   Serial.println();
   Serial.println(F("1_LoRa_Transmitter starting"));
-  Serial.println(F("For LilyGo TBEAM V1.2 ESP32 SX1262"));
+  Serial.println(F("For Heltec V3 ESP32S3 SX1262"));
   Serial.println();
 
   Wire.begin(SDA, SCL);
@@ -263,7 +293,7 @@ void setup()
   //LoRa.setBufferBaseAddress(0, 0);
   //LoRa.setPacketParams(8, LORA_PACKET_VARIABLE_LENGTH, 255, LORA_CRC_ON, LORA_IQ_NORMAL);
   //LoRa.setDioIrqParams(IRQ_RADIO_ALL, (IRQ_TX_DONE + IRQ_RX_TX_TIMEOUT), 0, 0);   //set for IRQ on TX done and timeout on DIO1
-  //LoRa.setHighSensitivity();  //set for maximum gain
+  //LoRa.setHighSensitivity();                       //set for maximum gain
   //LoRa.setSyncWord(LORA_MAC_PRIVATE_SYNCWORD);
   //***************************************************************************************************
 
@@ -277,23 +307,30 @@ void setup()
   dispscreen2();
   delay(2000);
 
-  pinMode(USERSW, INPUT_PULLUP);
-
-  //check if USERSW is pressed (low) if so activate buzzer
-  if (digitalRead(USERSW))
+  if (BUZZER)
   {
-    ENABLEBUZZER = false;
-    Serial.println(F("BUZZER disabled"));
-  }
-  else
-  {
-    ENABLEBUZZER = true;
-    Serial.println(F("BUZZER enabled"));
     pinMode(BUZZER, OUTPUT);
+    ENABLEBUZZER = true;
     buzzer_beep(500, 100, 100, 2);
-    dispscreen6();
-    delay(1000);
+
+    pinMode(USERSW, INPUT_PULLUP);
+
+    if (digitalRead(USERSW))
+    {
+      ENABLEBUZZER = false;
+      Serial.println(F("BUZZER disabled"));
+      dispscreen9();
+      delay(1500);
+    }
+    else
+    {
+      ENABLEBUZZER = true;
+      Serial.println(F("BUZZER enabled"));
+      dispscreen6();
+      delay(1500);
+    }
   }
+
 
   dispscreen4();
   Serial.print(F("Transmitter ready"));

@@ -6,7 +6,7 @@
 *******************************************************************************************************/
 
 /*******************************************************************************************************
-  For LilyGo TBEAM V1.2 ESP32 SX1262
+  For LilyGo T3 V1.6.1 ESP32 SX1278
 
   Program Operation - The packet logger program listens for incoming packets using the LoRa settings in
   the 'Settings.h' file. The pins to access the LoRa device need to be defined in the 'Settings.h' file.
@@ -30,14 +30,11 @@
 
 #include <Wire.h>                                  //For display
 #include <SPI.h>                                   //the LoRa device is SPI based so load the SPI library
-#include <SX126XLT.h>                              //get library here > https://github.com/StuartsProjects/SX12XX-LoRa  
-SX126XLT LoRa;                                     //create a library class instance called LoRa
+#include <SX127XLT.h>                              //get library here > https://github.com/StuartsProjects/SX12XX-LoRa  
+SX127XLT LoRa;                                     //create a library class instance called LoRa
 
-#include "LilyGo_TBEAM_V1_2_ESP32_SX1262_Pins.h"   //pin definitions for LilyGo TBEAM V1.2 ESP32 SX1262
+#include "LilyGo_T3_V1_6_1_ESP32_SX1278_Pins.h"    //pin definitions for LilyGo T3 V1.6.1 ESP32 SX1278
 #include "Settings.h"                              //LoRa settings, frequencies, program settings etc  
-
-#include <LiquidCrystal_PCF8574.h>                 //https://github.com/mathertel/LiquidCrystal_PCF8574
-LiquidCrystal_PCF8574 lcddisp(LCDDisplayAddress);  //set the LCD address
 
 #include <U8g2lib.h>                               //get library here > https://github.com/olikraus/U8g2_Arduino
 U8G2_SSD1306_128X64_NONAME_F_HW_I2C disp(U8G2_R0, U8X8_PIN_NONE);
@@ -52,8 +49,6 @@ int16_t PacketRSSI;                                //stores RSSI of received pac
 int8_t  PacketSNR;                                 //stores signal to noise ratio of received packet
 uint16_t RXtimeout;                                //stores count of RX timeouts
 bool ENABLEBUZZER = true;
-bool USEOLED = true;
-bool USELCD = false;
 
 
 void loop()
@@ -189,241 +184,116 @@ void displayElapsedTime()
 {
   float seconds;
   seconds = millis() / 1000;
-  if (USEOLED)
-  {
-    disp.print(seconds, 0);
-    disp.print(F("s"));
-  }
-  else
-  {
-    lcddisp.print(seconds, 0);
-    lcddisp.print(F("s"));
-  }
+  disp.print(seconds, 0);
+  disp.print(F("s"));
 }
 
 
 void dispscreen1()
 {
-  if (USEOLED)
+  disp.clearDisplay();
+  disp.setFont(u8g2_font_10x20_mf);
+  disp.setCursor(0, 15);
+  disp.print(F("RSSI "));
+  disp.print(PacketRSSI);
+  disp.print(F("dBm"));
+  disp.setCursor(0, 31);
+  disp.print(F("SNR  "));
+  if (PacketSNR > 0)
   {
-    disp.clearDisplay();
-    disp.setFont(u8g2_font_10x20_mf);
-    disp.setCursor(0, 15);
-    disp.print(F("RSSI "));
-    disp.print(PacketRSSI);
-    disp.print(F("dBm"));
-    disp.setCursor(0, 31);
-    disp.print(F("SNR  "));
-    if (PacketSNR > 0)
-    {
-      disp.print(F("+"));
-    }
-    disp.print(PacketSNR);
-    disp.setCursor(0, 47);
-    disp.print(RXpacketCount);
-    disp.print(F(" Pkts"));
-    disp.setCursor(3, 63);
-    //disp.setFont(u8g2_font_t0_11b_mf);
-    disp.sendBuffer();
+    disp.print(F("+"));
   }
-  else
-  {
-    lcdclearLine(0);
-    lcddisp.setCursor(0, 0);
-    lcddisp.print(F("RSSI  "));
-    lcddisp.print(PacketRSSI);
-    lcddisp.print(F("dBm "));
-
-    lcdclearLine(1);
-    lcddisp.setCursor(0, 1);
-    lcddisp.print(F("SNR  "));
-
-    if (PacketSNR > 0)
-    {
-      lcddisp.print(F("+"));
-    }
-
-    lcddisp.print(PacketSNR);
-    lcddisp.print(F("dB"));
-    lcdclearLine(2);
-    lcddisp.setCursor(0, 2);
-    lcddisp.print(RXpacketCount);
-    lcddisp.print(F(" Pkts"));
-  }
-}
-
-
-void lcdclearLine(uint8_t linenum)
-{
-  lcddisp.setCursor(0, linenum);
-  lcddisp.print(F("                    "));
+  disp.print(PacketSNR);
+  disp.setCursor(0, 47);
+  disp.print(RXpacketCount);
+  disp.print(F(" Pkts"));
+  disp.setCursor(3, 63);
+  //disp.setFont(u8g2_font_t0_11b_mf);
+  disp.sendBuffer();
 }
 
 
 void dispscreen2()
 {
-  if (USEOLED)
-  {
-    disp.setFont(u8g2_font_t0_11b_mf);
-    disp.setCursor(0, 11);
-    disp.print(Frequency);
-    disp.print(F("Hz"));
-    disp.setCursor(0, 23);
-    disp.print(F("BW "));
-    disp.print(LoRa.returnBandwidth(Bandwidth));
-    disp.print(F("Hz"));
-    disp.setCursor(0, 35);
-    disp.print(F("SF "));
-    disp.print(SpreadingFactor);
-    disp.sendBuffer();
-  }
-  else
-  {
-    lcdclearLine(0);
-    lcddisp.setCursor(0, 0);
-    lcddisp.print(Frequency);
-    lcddisp.print(F("Hz"));
-    lcdclearLine(1);
-    lcddisp.setCursor(0, 1);
-    lcddisp.print(F("BW "));
-    lcddisp.print(LoRa.returnBandwidth(Bandwidth));
-    lcddisp.print(F("Hz"));
-    lcdclearLine(2);
-    lcddisp.setCursor(0, 2);
-    lcddisp.print(F("SF "));
-    lcddisp.print(SpreadingFactor);
-  }
+  disp.setFont(u8g2_font_t0_11b_mf);
+  disp.setCursor(0, 11);
+  disp.print(Frequency);
+  disp.print(F("Hz"));
+  disp.setCursor(0, 23);
+  disp.print(F("BW "));
+  disp.print(LoRa.returnBandwidth(Bandwidth));
+  disp.print(F("Hz"));
+  disp.setCursor(0, 35);
+  disp.print(F("SF "));
+  disp.print(SpreadingFactor);
+  disp.sendBuffer();
 }
 
 
 void dispscreen4()
 {
-  if (USEOLED)
-  {
-    disp.clearDisplay();
-    disp.setFont(u8g2_font_10x20_mf);
-    disp.setCursor(0, 15);
-    disp.print(F("Ready"));
-    disp.sendBuffer();
-  }
-  else
-  {
-    lcddisp.clear();
-    lcddisp.setCursor(0, 0);
-    lcddisp.print(F("Ready"));
-  }
+  disp.clearDisplay();
+  disp.setFont(u8g2_font_10x20_mf);
+  disp.setCursor(0, 15);
+  disp.print(F("Ready"));
+  disp.sendBuffer();
 }
 
 
 void dispscreen5()
 {
-  if (USEOLED)
-  {
-    disp.clearDisplay();
-    disp.setFont(u8g2_font_10x20_mf);
-    disp.setCursor(0, 15);
-    displayElapsedTime();
-    disp.print(F(" Timeout"));
-    disp.sendBuffer();
-  }
-  else
-  {
-    lcddisp.clear();
-    lcddisp.setCursor(0, 0);
-    displayElapsedTime();
-    lcddisp.print(F(" Timeout"));
-  }
+  disp.clearDisplay();
+  disp.setFont(u8g2_font_10x20_mf);
+  disp.setCursor(0, 15);
+  displayElapsedTime();
+  disp.print(F(" Timeout"));
+  disp.sendBuffer();
 }
 
 void dispscreen6()
 {
-  if (USEOLED)
-  {
-    disp.clearDisplay();
-    disp.setFont(u8g2_font_10x20_mf);
-    disp.setCursor(0, 15);
-    disp.print(F("BUZZER ON"));
-    disp.sendBuffer();
-  }
-  else
-  {
-    lcddisp.clear();
-    lcddisp.setCursor(0, 0);
-    lcddisp.print(F("BUZZER ON"));
-  }
+  disp.clearDisplay();
+  disp.setFont(u8g2_font_10x20_mf);
+  disp.setCursor(0, 15);
+  disp.print(F("BUZZER ON"));
+  disp.sendBuffer();
 }
 
 
 void dispscreen7()
 {
-  if (USEOLED)
-  {
-    disp.setCursor(0, 23);
-    disp.print(F("LoRa OK"));
-    disp.sendBuffer();
-  }
-  else
-  {
-    lcddisp.setCursor(0, 1);
-    lcddisp.print(F("LoRa OK"));
-  }
+  disp.setCursor(0, 23);
+  disp.print(F("LoRa OK"));
+  disp.sendBuffer();
 }
 
 
 void dispscreen8()
 {
-  if (USEOLED)
-  {
-    disp.setCursor(0, 23);
-    disp.print(F("No LoRa Device"));
-    disp.sendBuffer();
-  }
-  else
-  {
-    lcddisp.setCursor(0, 1);
-    lcddisp.print(F("No LoRa Device"));
-  }
+  disp.setCursor(0, 23);
+  disp.print(F("No LoRa Device"));
+  disp.sendBuffer();
 }
 
 
 void dispscreen9()
 {
-  if (USEOLED)
-  {
-    disp.clearDisplay();
-    disp.setFont(u8g2_font_10x20_mf);
-    disp.setCursor(0, 15);
-    disp.print(F("BUZZER OFF"));
-    disp.sendBuffer();
-  }
-  else
-  {
-    lcddisp.clear();
-    lcddisp.setCursor(0, 0);
-    lcddisp.print(F("BUZZER OFF"));
-  }
+  disp.clearDisplay();
+  disp.setFont(u8g2_font_10x20_mf);
+  disp.setCursor(0, 15);
+  disp.print(F("BUZZER OFF"));
+  disp.sendBuffer();
 }
 
 
 void initDisplay()
 {
-  if (USEOLED)
-  {
-    disp.begin();
-    disp.clearDisplay();
-    disp.setFont(u8g2_font_t0_11b_mf);
-    disp.setCursor(0, 11);
-    disp.print(F("Check LoRa"));
-    disp.sendBuffer();
-  }
-  else
-  {
-    lcddisp.begin(20, 4);                   //initialize the LCDfor 4 line 20 character also supported
-    lcddisp.setBacklight(255);
-    lcddisp.clear();
-    lcddisp.setCursor(0, 0);
-    lcddisp.print(F("Check LoRa"));
-  }
+  disp.begin();
+  disp.clearDisplay();
+  disp.setFont(u8g2_font_t0_11b_mf);
+  disp.setCursor(0, 11);
+  disp.print(F("Check LoRa"));
+  disp.sendBuffer();
 }
 
 
@@ -472,33 +342,16 @@ void setup()
   Serial.begin(115200);
   Serial.println();
   Serial.println(F("2_LoRa_Receiver starting"));
-  Serial.println(F("For LilyGo TBEAM V1.2 ESP32 SX1262"));
+  Serial.println(F("For LilyGo T3 V1.6.1 ESP32 SX1278"));
   Serial.println();
 
   Wire.begin(SDA, SCL);
-
-  Wire.beginTransmission(LCDDisplayAddress);
-  int16_t error = Wire.endTransmission();
-
-  if (error == 0)
-  {
-    Serial.println("LCD found");
-    USELCD = true;
-    USEOLED = false;
-  }
-  else
-  {
-    Serial.println("LCD not found.");
-    USELCD = false;
-    USEOLED = true;
-  }
-
   initDisplay();
 
   SPI.begin(LORASCK, LORAMISO, LORAMOSI);
 
   //setup hardware pins used by LoRa device, then check if device is found
-  if (LoRa.begin(LORANSS, LORANRESET, LORABUSY, LORADIO1, LORA_DEVICE))
+  if (LoRa.begin(LORANSS, LORANRESET, LORADIO0, LORA_DEVICE))
   {
     dispscreen7;
     Serial.println(F("LoRa Device found"));
@@ -550,29 +403,17 @@ void setup()
 
   if (BUZZER)
   {
-    pinMode(BUZZER, OUTPUT);
     ENABLEBUZZER = true;
+    Serial.println(F("BUZZER enabled"));
+    pinMode(BUZZER, OUTPUT);
     buzzer_beep(500, 100, 100, 2);
-
-    if (USERSW)
-    {
-      pinMode(USERSW, INPUT_PULLUP);
-
-      if (digitalRead(USERSW))
-      {
-        ENABLEBUZZER = false;
-        Serial.println(F("BUZZER disabled"));
-        dispscreen9();
-        delay(1500);
-      }
-      else
-      {
-        ENABLEBUZZER = true;
-        Serial.println(F("BUZZER enabled"));
-        dispscreen6();
-        delay(1500);
-      }
-    }
+    dispscreen6();
+    delay(1000);
+  }
+  else
+  {
+    ENABLEBUZZER = false;
+    Serial.println(F("BUZZER disabled"));
   }
 
   dispscreen4();

@@ -1,9 +1,9 @@
 /*******************************************************************************************************
-  Programs for Arduino - Copyright of the author Stuart Robinson - 16/04/24
+  Programs for Arduino - Copyright of the author Stuart Robinson - 23/04/24
 
 *******************************************************************************************************/
 
-//These are the pin definitions for the TTGO TBEAM V1.2 with SX1262
+//These are the pin definitions for the LilyGo TBEAM V1.2 ESP32 SX1262
 
 #define LORAMOSI 27
 #define LORASCK 5
