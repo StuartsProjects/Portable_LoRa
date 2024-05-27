@@ -113,9 +113,7 @@ void packet_is_OK()
 #endif
 
   Serial.println();
-
   dispscreen1();
-
 }
 
 
@@ -207,8 +205,6 @@ void dispscreen1()
   disp.setCursor(0, 47);
   disp.print(RXpacketCount);
   disp.print(F(" Pkts"));
-  disp.setCursor(3, 63);
-  //disp.setFont(u8g2_font_t0_11b_mf);
   disp.sendBuffer();
 }
 
@@ -249,6 +245,7 @@ void dispscreen5()
   disp.print(F(" Timeout"));
   disp.sendBuffer();
 }
+
 
 void dispscreen6()
 {

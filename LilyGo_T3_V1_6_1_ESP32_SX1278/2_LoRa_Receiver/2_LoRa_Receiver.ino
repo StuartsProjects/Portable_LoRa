@@ -113,9 +113,7 @@ void packet_is_OK()
 #endif
 
   Serial.println();
-
   dispscreen1();
-
 }
 
 
@@ -207,8 +205,6 @@ void dispscreen1()
   disp.setCursor(0, 47);
   disp.print(RXpacketCount);
   disp.print(F(" Pkts"));
-  disp.setCursor(3, 63);
-  //disp.setFont(u8g2_font_t0_11b_mf);
   disp.sendBuffer();
 }
 
@@ -249,6 +245,7 @@ void dispscreen5()
   disp.print(F(" Timeout"));
   disp.sendBuffer();
 }
+
 
 void dispscreen6()
 {
@@ -369,26 +366,6 @@ void setup()
 
   //this function call sets up the device for LoRa using the settings from settings.h
   LoRa.setupLoRa(Frequency, Offset, SpreadingFactor, Bandwidth, CodeRate, Optimisation);
-
-  //*******************************************************************************************************
-  //Detail of the full LoRa device setup. You can use this as an alternative to the simple LoRa.setupLoRa()
-  //*******************************************************************************************************
-  //LoRa.setMode(MODE_STDBY_RC);
-  //LoRa.setRegulatorMode(USE_DCDC);
-  //LoRa.setPaConfig(0x04, PAAUTO, LORA_DEVICE);
-  //LoRa.setDIO3AsTCXOCtrl(TCXO_CTRL_3_3V);
-  //LoRa.calibrateDevice(ALLDevices);                //is required after setting TCXO
-  //LoRa.calibrateImage(Frequency);
-  //LoRa.setDIO2AsRfSwitchCtrl();
-  //LoRa.setPacketType(PACKET_TYPE_LORA);
-  //LoRa.setRfFrequency(Frequency, Offset);
-  //LoRa.setModulationParams(SpreadingFactor, Bandwidth, CodeRate, Optimisation);
-  //LoRa.setBufferBaseAddress(0, 0);
-  //LoRa.setPacketParams(8, LORA_PACKET_VARIABLE_LENGTH, 255, LORA_CRC_ON, LORA_IQ_NORMAL);
-  //LoRa.setDioIrqParams(IRQ_RADIO_ALL, (IRQ_TX_DONE + IRQ_RX_TX_TIMEOUT), 0, 0);   //set for IRQ on TX done and timeout on DIO1
-  //LoRa.setHighSensitivity();  //set for maximum gain
-  //LoRa.setSyncWord(LORA_MAC_PRIVATE_SYNCWORD);
-  //***************************************************************************************************
 
   Serial.println();
   LoRa.printModemSettings();                                   //reads and prints the configured LoRa settings, useful check
